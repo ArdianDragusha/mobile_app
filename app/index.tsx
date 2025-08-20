@@ -1,59 +1,60 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-export default function Calculator() {
-  const [num1, setNum1] = useState("");
-  const [num2, setNum2] = useState("");
-  const [result, setResult] = useState<number | null>(null);
-  const [error, setError] = useState("");
+export default function GuessingGame() {
+  const [target, setTarget] = useState(() => Math.floor(Math.random() * 100) + 1);
+  const [guess, setGuess] = useState("");
+  const [message, setMessage] = useState("Guess a number between 1-100");
+  const [guesses, setGuesses] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
 
-  const handleOperation = (op: "+" | "-") => {
-    const n1 = parseFloat(num1.replace(",", "."));
-    const n2 = parseFloat(num2.replace(",", "."));
-    if (isNaN(n1) || isNaN(n2)) {
-      setError("Only numbers");
-      setResult(null);
+  const handleGuess = () => {
+    const num = parseInt(guess, 10);
+    if (isNaN(num) || num < 1 || num > 100) {
+      setMessage("Enter a number between 1 and 100");
       return;
     }
-    setError("");
-    setResult(op === "+" ? n1 + n2 : n1 - n2);
+    setGuesses(guesses + 1);
+    if (num < target) {
+      setMessage(`Your guess ${num} is too low`);
+    } else if (num > target) {
+      setMessage(`Your guess ${num} is too high`);
+    } else {
+      setMessage(`You guessed the number in ${guesses + 1} tries.`);
+      setGameOver(true);
+    }
+    setGuess("");
+  };
+
+  const handleRestart = () => {
+    setTarget(Math.floor(Math.random() * 100) + 1);
+    setGuess("");
+    setMessage("Guess a number between 1-100");
+    setGuesses(0);
+    setGameOver(false);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.result}>
-        {error ? error : result !== null ? `Result: ${result}` : ""}
-      </Text>
-      <TextInput
-        style={styles.input}
-        keyboardType="numeric"
-        value={num1}
-        onChangeText={setNum1}
-        placeholder="First number"
-        placeholderTextColor="#888"
-      />
-      <TextInput
-        style={styles.input}
-        keyboardType="numeric"
-        value={num2}
-        onChangeText={setNum2}
-        placeholder="Second number"
-        placeholderTextColor="#888"
-      />
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleOperation("+")}
-        >
-          <Text>+</Text>
+      <Text style={styles.message}>{message}</Text>
+      {!gameOver && (
+        <>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={guess}
+            onChangeText={setGuess}
+          />
+          <TouchableOpacity style={styles.button} onPress={handleGuess}>
+            <Text>MAKE GUESS</Text>
+          </TouchableOpacity>
+        </>
+      )}
+      {gameOver && (
+        <TouchableOpacity style={styles.button} onPress={handleRestart}>
+          <Text>PLAY AGAIN</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleOperation("-")}
-        >
-          <Text>-</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </View>
   );
 }
@@ -64,30 +65,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  result: {
+  message: {
     fontSize: 20,
     marginBottom: 10,
     color: "black",
     minHeight: 28,
+    textAlign: "center",
   },
   input: {
-    width: 200,
+    width: 100,
     height: 35,
     borderWidth: 1,
-    marginBottom: 5,
+    marginBottom: 10,
     paddingHorizontal: 8,
     fontSize: 18,
     color: "black",
-  },
-  buttonRow: {
-    flexDirection: "row",
-    marginTop: 10,
-    gap: 16,
+    textAlign: "center",
   },
   button: {
     paddingHorizontal: 24,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 4,
-    marginHorizontal: 8,
+    marginTop: 8,
   },
 });
