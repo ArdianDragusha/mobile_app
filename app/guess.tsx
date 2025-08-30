@@ -1,79 +1,82 @@
-import { useEffect, useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useState } from "react";
+import { Text, TextInput, View, Button, StyleSheet, Alert, KeyboardAvoidingView, Platform } from "react-native";
 
+export default function Index() {
+    const [correctNum, setCorrectNum] = useState(Math.floor(Math.random() * 100) + 1);
+    const [num, setNum] = useState("");
+    const [feedback, setFeedback] = useState("");
+    const [guessCount, setGuessCount] = useState(0);
 
-export default function GuessingGame() {
+    const handleGuess = () => {
+        const parsedNum = parseInt(num, 10);
 
-    const [gameOn, setGameOn] = useState(false); // Whether the game is active
-    const [correct, setCorrect] = useState(0);  // The correct answer
-    const [guesses, setGuesses] = useState(0);  // Number of guesses made
-    const [input, setInput] = useState("");     // User input
-    const [message, setMessage] = useState(""); // Feedback message
-
-    function newGame() {
-        const random = 1 + Math.floor(Math.random() * 100);
-        console.log("Correct answer is " + random);
-
-        setCorrect(random);
-        setGuesses(0);
-        setInput("");
-        setMessage("");
-        setGameOn(true);
-    }
-
-    function makeGuess() {
-        debugger
-        const guess = +input;
-
-        if (isNaN(guess)) {
-            setMessage("Please enter a valid number.");
+        if (isNaN(parsedNum)) {
+            Alert.alert("Invalid input", "Please enter numbers only.");
             return;
         }
 
-        setGuesses(guesses + 1);
+        setGuessCount(guessCount + 1);
 
-        if (guess === correct) {
-            // fixme: wrong number of guesses shown
-            setMessage(`Correct! It took you ${guesses} guesses.`);
-            setGameOn(false);
+        if (parsedNum < correctNum) {
+            setFeedback("Too low");
+        } else if (parsedNum > correctNum) {
+            setFeedback("Too high");
         } else {
-            setMessage(guess < correct ? "Higher!" : "Lower!");
+            Alert.alert("Correct!", `You guessed correctly in ${guessCount + 1} attempts.`);
+            setFeedback("Correct!");
+            setCorrectNum(Math.floor(Math.random() * 100) + 1);
+            setGuessCount(0);
         }
-    }
 
-    useEffect(() => newGame(), []);
+        setNum("");
+    };
 
-    return <View style={styles.container}>
-
-        <TextInput
-            style={styles.input}
-            value={input} onChangeText={setInput}
-            keyboardType="numeric"
-            placeholder="Guess a number between 1-100!"
-            editable={gameOn}
-        />
-
-        <Button title="Guess!" onPress={makeGuess} disabled={!gameOn} />
-        <Button title="Start a new game" onPress={newGame} />
-
-        <Text>Guesses: {guesses}</Text>
-        <Text>{message}</Text>
-
-    </View>;
+    return (
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <View style={styles.container}>
+                <Text style={styles.title}>Guessing Game</Text>
+                <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    placeholder="Enter your guess"
+                    value={num}
+                    onChangeText={setNum}
+                />
+                <Button title="Guess" onPress={handleGuess} />
+                {feedback !== "" && <Text style={styles.feedback}>{feedback}</Text>}
+            </View>
+        </KeyboardAvoidingView>
+    );
 }
-
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "silver",
-        padding: 10,
-        gap: 10,
+        flex: 1,
         justifyContent: "center",
-        flex: 1
+        alignItems: "center",
+        padding: 16,
+        backgroundColor: "silver",
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: "bold",
+        marginBottom: 16,
     },
     input: {
-        borderColor: "black",
+        width: "80%",
+        height: 50,
+        borderColor: "gray",
         borderWidth: 1,
-        backgroundColor: "white"
-    }
+        borderRadius: 4,
+        marginBottom: 12,
+        paddingHorizontal: 8,
+    },
+    feedback: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginTop: 16,
+    },
 });
